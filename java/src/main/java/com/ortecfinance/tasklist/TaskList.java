@@ -4,10 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -66,6 +63,9 @@ public final class TaskList implements Runnable {
             case "today":
                 today();
                 break;
+            case "view-by-deadline":
+                viewByDeadline();
+                break;
             case "check":
                 check(commandRest[1]);
                 break;
@@ -79,6 +79,35 @@ public final class TaskList implements Runnable {
                 error(command);
                 break;
         }
+    }
+   // view tasks based on deadline (asc order)
+    private void viewByDeadline() {
+        Map<LocalDate,Map<String, List<Task>>> groupedByDate = new TreeMap<>((d1, d2)->{
+            if(d1==null) return 1;
+            if(d2==null) return -1;
+            return d1.compareTo(d2);   //custom comparator for asc order date sorting
+        });
+        for(Map.Entry<String, List<Task>> project: tasks.entrySet()){
+            for(Task task : project.getValue()){
+                groupedByDate.computeIfAbsent(task.getDeadline(), k -> new LinkedHashMap<>())
+                        .computeIfAbsent(project.getKey(), k -> new ArrayList<>())
+                        .add(task);
+            }
+        }
+        for (Map.Entry<LocalDate, Map<String, List<Task>>> entry : groupedByDate.entrySet()) {
+            LocalDate deadline = entry.getKey();
+            String header = (deadline == null) ? "No deadline:" : deadline.format(formatter) + ":";
+            out.println(header);
+
+            for (Map.Entry<String, List<Task>> project : entry.getValue().entrySet()) {
+                out.printf("    %s:%n", project.getKey());
+                for (Task task : project.getValue()) {
+                    out.printf("        %d: %s%n", task.getId(), task.getDescription());
+                }
+            }
+            out.println();
+        }
+
     }
 
     //show tasks with todays deadline
@@ -208,6 +237,7 @@ public final class TaskList implements Runnable {
         out.println("  deadline <task ID> <date 'dd-MM-yyyy'>");
         out.println("  check <task ID>");
         out.println("  uncheck <task ID>");
+        out.println("  view-by-deadline");
         out.println();
     }
 
