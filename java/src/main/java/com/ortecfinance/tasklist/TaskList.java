@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 
 public final class TaskList implements Runnable {
     private static final String QUIT = "quit";
@@ -15,8 +18,8 @@ public final class TaskList implements Runnable {
     private final Map<String, List<Task>> tasks = new LinkedHashMap<>();
     private final BufferedReader in;
     private final PrintWriter out;
-
     private long lastId = 0;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public static void startConsole() {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -60,6 +63,9 @@ public final class TaskList implements Runnable {
             case "deadline":
                 deadline(commandRest[1]);
                 break;
+            case "today":
+                today();
+                break;
             case "check":
                 check(commandRest[1]);
                 break;
@@ -74,7 +80,40 @@ public final class TaskList implements Runnable {
                 break;
         }
     }
-     // add deadline to an existing task
+
+    //show tasks with todays deadline
+    private void today() {
+        LocalDate today = LocalDate.now();
+        boolean foundAny = false;
+
+        for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
+            List<Task> todaysTasks = new ArrayList<>();
+            for (Task task : project.getValue()) {
+                if (task.getDeadline() != null && task.getDeadline().isEqual(today)) {
+                    todaysTasks.add(task);
+                }
+            }
+
+            if (!todaysTasks.isEmpty()) {
+                out.println(project.getKey());
+                for (Task task : todaysTasks) {
+                    out.printf("    [%c] %d: %s (Due: %s)%n",
+                            (task.isDone() ? 'x' : ' '),
+                            task.getId(),
+                            task.getDescription(),
+                            task.getDeadline().format(formatter));
+                }
+                out.println();
+                foundAny = true;
+            }
+        }
+
+        if (!foundAny) {
+            out.println("No tasks are due today.");
+        }
+    }
+
+    // add deadline to an existing task
     private void deadline(String commandLine) {
         String[] args = commandLine.split(" ", 2);
         if(args.length<2){
@@ -83,12 +122,13 @@ public final class TaskList implements Runnable {
         }
         try{
             int taskId = Integer.parseInt(args[0]);
-            String deadline = args[1];
+            LocalDate deadline = LocalDate.parse(args[1],formatter);
+
             for(List<Task> projectTasks: tasks.values()){
                 for(Task task : projectTasks){
                     if(task.getId()==taskId){
                         task.setDeadline(deadline);
-                        out.printf("dealine set for task %d: %s%n", taskId, deadline);
+//                        out.printf("dealine set for task %d: %s%n", taskId, deadline);
                         return;
                     }
                 }
@@ -105,7 +145,7 @@ public final class TaskList implements Runnable {
         for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
             out.println(project.getKey());
             for (Task task : project.getValue()) {
-                String taskDeadline = task.getDeadline()!=null? " (Due: " + task.getDeadline() + ")" : "";
+                String taskDeadline = task.getDeadline()!=null? " (Due: " + task.getDeadline().format(formatter) + ")" : "";
                 out.printf("    [%c] %d: %s%s%n", (task.isDone() ? 'x' : ' '), task.getId(), task.getDescription(),taskDeadline);
             }
             out.println();
@@ -162,9 +202,10 @@ public final class TaskList implements Runnable {
     private void help() {
         out.println("Commands:");
         out.println("  show");
+        out.println("  today");
         out.println("  add project <project name>");
         out.println("  add task <project name> <task description>");
-        out.println("  deadline <task ID> <date>");
+        out.println("  deadline <task ID> <date 'dd-MM-yyyy'>");
         out.println("  check <task ID>");
         out.println("  uncheck <task ID>");
         out.println();

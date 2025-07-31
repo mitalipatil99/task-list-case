@@ -1,10 +1,12 @@
 package com.ortecfinance.tasklist;
 
+import java.time.LocalDate;
+
 public final class Task {
     private final long id;
     private final String description;
     private boolean done;
-    private String deadline;
+    private LocalDate deadline;
 
     public Task(long id, String description, boolean done) {
         this.id = id;
@@ -30,10 +32,10 @@ public final class Task {
         this.done = done;
     }
 
-    public String getDeadline(){
+    public LocalDate getDeadline(){
         return deadline;
     }
-    public void setDeadline(String deadline){
+    public void setDeadline(LocalDate deadline){
         this.deadline = deadline;
     }
 }

@@ -7,6 +7,8 @@ import java.io.*;
 import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public final class ApplicationTest {
     public static final String PROMPT = "> ";
@@ -93,6 +95,47 @@ public final class ApplicationTest {
 
         execute("quit");
     }
+    @Test
+    void it_sets_and_shows_deadlines() throws IOException {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        execute("add project test");
+        execute("add task test Write int tests");
+        execute("deadline 1 "+today);
+
+        execute("show");
+        readLines(
+                "test",
+                "    [ ] 1: Write int tests (Due: "+today+")",
+                ""
+        );
+
+        execute("quit");
+    }
+
+    @Test
+    void it_shows_only_today_tasks() throws IOException {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        String tomorrow = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+        execute("add project p1");
+        execute("add task p1 Do it today");
+        execute("deadline 1 "+today);
+
+        execute("add project p2");
+        execute("add task p2 Do it tomorrow");
+        execute("deadline 2 "+tomorrow);
+
+        execute("today");
+        readLines(
+                "p1",
+                "    [ ] 1: Do it today (Due: "+today+")",
+                ""
+        );
+
+        execute("quit");
+    }
+
 
     private void execute(String command) throws IOException {
         read(PROMPT);
