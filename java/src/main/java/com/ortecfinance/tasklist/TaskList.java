@@ -57,6 +57,9 @@ public final class TaskList implements Runnable {
             case "add":
                 add(commandRest[1]);
                 break;
+            case "deadline":
+                deadline(commandRest[1]);
+                break;
             case "check":
                 check(commandRest[1]);
                 break;
@@ -71,12 +74,39 @@ public final class TaskList implements Runnable {
                 break;
         }
     }
+     // add deadline to an existing task
+    private void deadline(String commandLine) {
+        String[] args = commandLine.split(" ", 2);
+        if(args.length<2){
+            out.println("Invalid deadline command. Usage : deadline <taskID> <date>");
+            return;
+        }
+        try{
+            int taskId = Integer.parseInt(args[0]);
+            String deadline = args[1];
+            for(List<Task> projectTasks: tasks.values()){
+                for(Task task : projectTasks){
+                    if(task.getId()==taskId){
+                        task.setDeadline(deadline);
+                        out.printf("dealine set for task %d: %s%n", taskId, deadline);
+                        return;
+                    }
+                }
+            }
+            out.printf("Task Id not found!");
+
+        }catch(Exception e){
+            out.println(e.getMessage());
+        }
+
+    }
 
     private void show() {
         for (Map.Entry<String, List<Task>> project : tasks.entrySet()) {
             out.println(project.getKey());
             for (Task task : project.getValue()) {
-                out.printf("    [%c] %d: %s%n", (task.isDone() ? 'x' : ' '), task.getId(), task.getDescription());
+                String taskDeadline = task.getDeadline()!=null? " (Due: " + task.getDeadline() + ")" : "";
+                out.printf("    [%c] %d: %s%s%n", (task.isDone() ? 'x' : ' '), task.getId(), task.getDescription(),taskDeadline);
             }
             out.println();
         }
@@ -134,6 +164,7 @@ public final class TaskList implements Runnable {
         out.println("  show");
         out.println("  add project <project name>");
         out.println("  add task <project name> <task description>");
+        out.println("  deadline <task ID> <date>");
         out.println("  check <task ID>");
         out.println("  uncheck <task ID>");
         out.println();

@@ -4,11 +4,14 @@ public final class Task {
     private final long id;
     private final String description;
     private boolean done;
+    private String deadline;
 
     public Task(long id, String description, boolean done) {
         this.id = id;
         this.description = description;
         this.done = done;
+        this.deadline=null; //deafault no deadline
+
     }
 
     public long getId() {
@@ -25,5 +28,12 @@ public final class Task {
 
     public void setDone(boolean done) {
         this.done = done;
+    }
+
+    public String getDeadline(){
+        return deadline;
+    }
+    public void setDeadline(String deadline){
+        this.deadline = deadline;
     }
 }
