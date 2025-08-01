@@ -1,4 +1,4 @@
-package com.ortecfinance.tasklist;
+package com.ortecfinance.tasklist.model;
 
 import java.time.LocalDate;
 
@@ -8,10 +8,10 @@ public final class Task {
     private boolean done;
     private LocalDate deadline;
 
-    public Task(long id, String description, boolean done) {
+    public Task(long id, String description) {
         this.id = id;
         this.description = description;
-        this.done = done;
+        this.done = false; //set default to false
         this.deadline=null; //deafault no deadline
 
     }
