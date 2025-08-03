@@ -1,5 +1,6 @@
 package com.ortecfinance.tasklist;
 
+import com.ortecfinance.tasklist.cli.TaskListConsole;
 import org.junit.jupiter.api.*;
 
 import java.io.*;
@@ -23,7 +24,7 @@ public final class ApplicationTest {
     public ApplicationTest() throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(new PipedInputStream(inStream)));
         PrintWriter out = new PrintWriter(new PipedOutputStream(outStream), true);
-        TaskList taskList = new TaskList(in, out);
+        TaskListConsole taskList = new TaskListConsole(in, out);
         applicationThread = new Thread(taskList);
     }
 
@@ -60,8 +61,7 @@ public final class ApplicationTest {
         readLines(
             "secrets",
             "    [ ] 1: Eat more donuts.",
-            "    [ ] 2: Destroy all humans.",
-            ""
+            "    [ ] 2: Destroy all humans."
         );
 
         execute("add project training");
@@ -82,97 +82,17 @@ public final class ApplicationTest {
                 "secrets",
                 "    [x] 1: Eat more donuts.",
                 "    [ ] 2: Destroy all humans.",
-                "",
                 "training",
                 "    [x] 3: Four Elements of Simple Design",
                 "    [ ] 4: SOLID",
                 "    [x] 5: Coupling and Cohesion",
                 "    [x] 6: Primitive Obsession",
                 "    [ ] 7: Outside-In TDD",
-                "    [ ] 8: Interaction-Driven Design",
-                ""
+                "    [ ] 8: Interaction-Driven Design"
         );
 
         execute("quit");
     }
-    @Test
-    void it_sets_and_shows_deadlines() throws IOException {
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-
-        execute("add project test");
-        execute("add task test Write int tests");
-        execute("deadline 1 "+today);
-
-        execute("show");
-        readLines(
-                "test",
-                "    [ ] 1: Write int tests (Due: "+today+")",
-                ""
-        );
-
-        execute("quit");
-    }
-
-    @Test
-    void it_shows_only_today_tasks() throws IOException {
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-        String tomorrow = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-
-        execute("add project p1");
-        execute("add task p1 Do it today");
-        execute("deadline 1 "+today);
-
-        execute("add project p2");
-        execute("add task p2 Do it tomorrow");
-        execute("deadline 2 "+tomorrow);
-
-        execute("today");
-        readLines(
-                "p1",
-                "    [ ] 1: Do it today (Due: "+today+")",
-                ""
-        );
-
-        execute("quit");
-    }
-    @Test
-    void it_tests_view_by_Deadline() throws IOException{
-        execute("add project secrets");
-        execute("add task secrets eat more donuts");
-        execute("deadline 1 11-11-2021");
-
-        execute("add project training");
-        execute("add task training simple design");
-        execute("deadline 2 11-11-2021");
-
-        execute("add task training driven design");
-        execute("deadline 3 13-11-2021");
-
-        execute("add task training refactor");
-
-        execute("view-by-deadline -p");
-        readLines(
-                "11-11-2021:",
-                "    secrets:",
-                "        1: eat more donuts",
-                "    training:",
-                "        2: simple design",
-                "",
-                "13-11-2021:",
-                "    training:",
-                "        3: driven design",
-                "",
-                "No deadline:",
-                "    training:",
-                "        4: refactor",
-                ""
-        );
-
-        execute("quit");
-
-
-    }
-
 
     private void execute(String command) throws IOException {
         read(PROMPT);

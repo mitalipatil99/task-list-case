@@ -1,6 +1,7 @@
 package com.ortecfinance.tasklist.cli;
 
 import com.ortecfinance.tasklist.model.Task;
+import com.ortecfinance.tasklist.service.ShareInstance;
 import com.ortecfinance.tasklist.service.TaskService;
 
 import java.io.*;
@@ -16,7 +17,7 @@ public class TaskListConsole implements Runnable {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public TaskListConsole(BufferedReader reader, PrintWriter writer) {
-        this.service = new TaskService();
+        this.service =  ShareInstance.getInstance();
         this.in = reader;
         this.out = writer;
     }
