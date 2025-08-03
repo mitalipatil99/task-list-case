@@ -82,3 +82,121 @@ _Optional_:
 - `GET /projects/view_by_deadline`: Get all tasks grouped by deadline (or also by project if you did the optional part)
 
 
+# TaskList Application
+
+This is a **Java Spring Boot + CLI-based task management application** that allows users to manage projects, tasks, deadlines, and completion statuses via both **REST APIs** and a **console interface**.
+
+---
+
+## Table of Contents
+
+- [Overview](#-overview)
+- [Features](#-features)
+- [REST API Endpoints](#-rest-api-endpoints)
+- [Console Interface](#-console-interface)
+- [How to Run](#-how-to-run)
+- [Changes Made](#-changes-made)
+
+---
+
+## Overview
+
+The TaskList application supports two modes of interaction:
+
+1. **RESTful Web API** – Use HTTP requests to manage projects and tasks.
+2. **Console Interface** – Use CLI commands like `add`, `check`, `view-by-deadline`, etc., to interactively manage tasks.
+
+All tasks are grouped under projects. Each task can have a description, a deadline, and a completion status.
+
+---
+
+## Features
+
+- Create multiple **projects**
+- Add **tasks** under each project
+- Set **deadlines** per task
+- Mark tasks as **done/undone**
+- View:
+    - All tasks by project
+    - Tasks grouped by **deadline**
+    - Tasks due **today**
+- Dual support: **REST APIs** & **Console CLI**
+
+---
+
+##  REST API Endpoints
+
+Base URL: `http://localhost:8080/projects`
+
+###  Create a project
+```http
+curl -X POST http://localhost:8080/projects \
+     -H "Content-Type: application/json" \
+     -d 'MyProject'
+```
+###  Add a Task
+```http
+curl -X POST http://localhost:8080/projects \
+     -H "Content-Type: application/json" \
+     -d 'MyProject'
+```   
+### Update Deadline 
+```http
+curl -X PUT "http://localhost:8080/projects/MyProject/tasks/1?deadline=31-12-2025"
+```
+### View all Tasks
+```http
+ curl -X GET http://localhost:8080/projects
+```
+### View Tasks grouped by deadline 
+```http
+ curl -X GET http://localhost:8080/projects/view_by_deadline
+```
+
+## Console Interface
+Run the console and interact using the following commands:
+Type `help` in the cli  
+
+```
+show
+add project <project name>
+add task <project name> <task description>
+deadline <task ID> <dd-MM-yyyy>
+check <task ID>
+uncheck <task ID>
+today
+view-by-deadline
+quit
+```
+
+### Example Session 
+```
+> add project secrets
+> add task secrets Eat more donuts.
+> add task secrets Destroy all humans.
+> check 1
+> show
+secrets
+    [x] 1: Eat more donuts.
+    [ ] 2: Destroy all humans.
+> deadline 2 18-04-2026
+> show
+secrets
+    [x] 1: Eat more donuts.
+    [ ] 2: Destroy all humans. (Due: 18-04-2026)
+```
+
+## How to Run
+1. Clone the Java folder repo.
+2. Build with maven : `mvn clean install`
+3. Run Spring Boot App: `mvn spring-boot:run` 
+
+## Changes Made
+1. Built TaskService as a singleton (ShareInstance) to be shared between CLI and REST API.
+2. Added TaskListConsole for CLI operation.
+3. Implemented TaskController for REST interface.
+4. Added error handling and validation.
+5. Refactored code base into Service Layer - for core Task logic, Model Layer - for Task Entity, CLI - for console interaction, Controller Layer - for REST endpoints.
+6. Added unit Tests for Service Layer. 
+
+
