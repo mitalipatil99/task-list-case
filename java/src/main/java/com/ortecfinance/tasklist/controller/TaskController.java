@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +19,7 @@ import java.util.Map;
 public class TaskController {
 
     private final TaskService taskService;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public TaskController() {
         this.taskService = ShareInstance.getInstance();
@@ -27,7 +30,7 @@ public class TaskController {
 //        return Arrays.asList("Task 1", "Task 2", "Task 3");
 //   }
     @PostMapping
-    public ResponseEntity<String> createProject(@RequestBody String name) {  //create a project API
+    public ResponseEntity<String> createProject(@RequestBody String name) {  //create a project
         if (name == null || name.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Project name is required.");
         }
@@ -80,8 +83,16 @@ public class TaskController {
 
 
     @GetMapping("/view_by_deadline") //get tasks grouped by deadline
-    public ResponseEntity<Map<LocalDate, Map<String, List<Task>>>> getViewByDeadline() {
-        return ResponseEntity.ok(taskService.getTasksGroupedByDeadline());
+    public ResponseEntity<Map<String, Map<String, List<Task>>>> getViewByDeadline() {
+        Map<String, Map<String, List<Task>>> result = new LinkedHashMap<>();
+        Map<LocalDate, Map<String, List<Task>>> groupedByDate = taskService.getTasksGroupedByDeadline();
+        for (Map.Entry<LocalDate, Map<String, List<Task>>> entry : groupedByDate.entrySet()) {
+            String dateKey = (entry.getKey() != null)
+                    ? entry.getKey().format(formatter)
+                    : "No deadline";
+            result.put(dateKey, entry.getValue());
+        }
+        return ResponseEntity.ok(result);
     }
     // curl -X GET http://localhost:8080/projects/view_by_deadline
 }
